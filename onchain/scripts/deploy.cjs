@@ -11,7 +11,8 @@ async function main() {
   for (const symbol of symbols) { const t = await (await ethers.getContractFactory('PlutoDemoStock')).deploy(symbol); await t.waitForDeployment(); tokens.push({ symbol, address: await t.getAddress() }); }
   const v = await (await ethers.getContractFactory('PlutoBasket')).deploy('Pluto Core Five Demo', 'PLUTO', tokens.map(t => t.address), units.map(ethers.parseEther));
   await v.waitForDeployment(); const receipt = await v.deploymentTransaction().wait();
-  const result = { chainId:46630, network:'Robinhood Chain Testnet', rpc:network.config.url || 'http://127.0.0.1:8545', explorer:'https://explorer.testnet.chain.robinhood.com', vault:await v.getAddress(), tokens, transactionHash:receipt.hash, blockNumber:receipt.blockNumber, mode: network.name === 'localhost' ? 'local' : 'testnet-demo', deployedAt:new Date().toISOString() };
+  const local = ['localhost','hardhat'].includes(network.name);
+  const result = { chainId:46630, network:local?'Local development chain':'Robinhood Chain Testnet', rpc:network.config.url || 'http://127.0.0.1:8545', explorer:local?'':'https://explorer.testnet.chain.robinhood.com', vault:await v.getAddress(), tokens, transactionHash:receipt.hash, blockNumber:receipt.blockNumber, mode:local?'local':'testnet-demo', deployedAt:new Date().toISOString() };
   fs.mkdirSync('deployments',{recursive:true}); fs.writeFileSync(`deployments/${network.name}.json`,JSON.stringify(result,null,2));
   if (network.name === 'robinhoodTestnet') fs.writeFileSync('../src/deployment.json',JSON.stringify(result,null,2));
   // Validate the complete path on the disposable local chain, without publishing

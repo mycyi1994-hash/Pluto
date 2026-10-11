@@ -6,6 +6,8 @@
 - Cloudflare Worker deployed at https://pluto-robinhood.gana003.workers.dev.
 - Live API returns all five constituent records, reference NAV and canonical digest.
 - Browser evidence verification confirms the digest. Testnet transaction controls accurately show the undeployed state.
+- A disposable local-chain deployment completed all five token deployments, vault deployment, faucets, approvals, share creation and full redemption. Local addresses are ignored by Git and never published as the live testnet manifest.
+- GitHub Actions Verify Pluto passed for the published repository.
 
 Outstanding: Robinhood Testnet gas funding, real-chain contract deployment and create/redeem receipts. Source code tests do not substitute for these. No deployed vault address is claimed until the manifest is populated by the deployment script.
 
