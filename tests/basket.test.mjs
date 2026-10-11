@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { decimal, format, canonical, digest, valueConstituent } from '../shared/basket.mjs';
+const basket = { symbol: 'AAPL', units: '0.08' };
+const asset = { tokenSymbol: 'AAPL', tokenDecimals: 18, deployments: [{ chainId: 4663, contractAddress: '0x1' }], currentMultiplier: '2', status: 'ASSET_STATUS_ACTIVE' };
+const quote = { tokenSymbol: 'AAPL', bid: '100', ask: '102', currency: 'USD', generatedAt: '2026-10-11T00:00:00Z' };
+test('REST pricing applies corporate action multiplier exactly once', () => { const row = valueConstituent(basket, asset, quote, Date.parse(quote.generatedAt)); assert.equal(row.exposure, '0.16'); assert.equal(row.value, '16.16'); assert.equal(row.rawUnits, '80000000000000000'); });
+test('rejects unsupported assets, crossed quotes and invalid decimals', () => { assert.throws(() => valueConstituent(basket, { ...asset, deployments: [] }, quote)); assert.throws(() => valueConstituent(basket, asset, { ...quote, ask: '99' })); for (const x of ['-1', '1e3', 'NaN', '1.0000000000000000001']) assert.throws(() => decimal(x)); });
+test('stale data is explicit; rounding stays in integer arithmetic', () => { assert.equal(valueConstituent(basket, asset, quote, Date.parse(quote.generatedAt) + 600000).stale, true); assert.equal(format(decimal('0.000000000000000001')), '0.000000000000000001'); assert.equal(format(0n), '0'); });
+test('evidence hashing is reproducible regardless of key insertion order', async () => { assert.equal(canonical({ z: 1, a: [2, 3] }), canonical({ a: [2, 3], z: 1 })); assert.equal(await digest({ b: 2, a: 1 }), await digest({ a: 1, b: 2 })); assert.notEqual(await digest({ a: 1 }), await digest({ a: 2 })); });
