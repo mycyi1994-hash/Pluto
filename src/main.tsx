@@ -18,6 +18,7 @@ function App() {
   const [account, setAccount] = useState<Address | null>(null), [shares, setShares] = useState('1'), [mode, setMode] = useState('Create');
   const [busy, setBusy] = useState(false), [status, setStatus] = useState(''), [hash, setHash] = useState(''), [verified, setVerified] = useState(false);
   const [balance, setBalance] = useState('0'), [supply, setSupply] = useState('0'), [holdings, setHoldings] = useState<string[]>([]);
+  const [now, setNow] = useState(Date.now());
   async function refresh() {
     try { const r = await fetch('/api/snapshot'); const data = await r.json(); if (!r.ok) throw new Error(data.error); setSnapshot(data); setError(''); setVerified(false); } catch (e) { setError((e as Error).message); }
   }
@@ -29,6 +30,7 @@ function App() {
     setHoldings(held.map(v => formatUnits(v, 18)));
   }
   useEffect(() => { void refresh(); void refreshChain().catch(() => setStatus('Testnet RPC unavailable. Try again shortly.')); }, []);
+  useEffect(() => { const timer=setInterval(()=>setNow(Date.now()),30000); return ()=>clearInterval(timer); }, []);
   useEffect(() => {
     const changed = () => { setAccount(null); setBalance('0'); setStatus('Wallet changed. Connect again before transacting.'); };
     window.ethereum?.on?.('accountsChanged', changed); window.ethereum?.on?.('chainChanged', changed);
@@ -61,7 +63,7 @@ function App() {
   }
   async function verify() { if(snapshot) { const ok=await digest(snapshot.evidence)===snapshot.hash;setVerified(ok);setStatus(ok?'Evidence digest verified in your browser. This proves file integrity, not issuer accuracy.':'Evidence hash mismatch. Refresh before relying on this snapshot.'); } }
   function download() {if(!snapshot)return;const url=URL.createObjectURL(new Blob([JSON.stringify(snapshot,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='pluto-evidence.json';a.click();URL.revokeObjectURL(url);}
-  const rows=snapshot?.evidence.constituents || [], nav=Number(snapshot?.evidence.referenceNav || 0);
+  const rows=(snapshot?.evidence.constituents || []).map(row=>({...row,stale:row.stale||now-Date.parse(row.generatedAt)>300000})), nav=Number(snapshot?.evidence.referenceNav || 0);
   let angle=0;const segments=rows.map(r=>{const start=angle;angle+=Number(r.value)/nav*100;return `${r.color} ${start}% ${angle}%`;}).join(',');
   return <div className="shell">
     <aside className="rail"><a className="brand" href="/"><img src="/pluto.svg" alt=""/>pluto<span>●</span></a><p className="rail-note">A clearer orbit<br/>for your assets.</p><nav aria-label="Main">{['Basket','Your position','Evidence'].map((t,i)=><button className={tab===t?'nav active':'nav'} key={t} onClick={()=>setTab(t)}><span aria-hidden="true">{['◉','▦','◇'][i]}</span>{t}</button>)}</nav><div className="rail-bottom"><span className="network-dot"/>Robinhood Chain<br/><small>Independent application</small><a href="https://github.com/mycyi1994-hash/Pluto" target="_blank" rel="noreferrer">Code & methodology ↗</a></div></aside>
