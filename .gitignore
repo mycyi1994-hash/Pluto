@@ -8,5 +8,7 @@ dist/
 *.tsbuildinfo
 onchain/artifacts/
 onchain/cache/
+onchain/deployments/hardhat.json
+onchain/deployments/localhost.json
 outputs/
 *.log

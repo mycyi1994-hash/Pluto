@@ -8,3 +8,5 @@
 - Browser evidence verification confirms the digest. Testnet transaction controls accurately show the undeployed state.
 
 Outstanding: Robinhood Testnet gas funding, real-chain contract deployment and create/redeem receipts. Source code tests do not substitute for these. No deployed vault address is claimed until the manifest is populated by the deployment script.
+
+Deployment wallet: 0x83807fADf119f22A8B062ba19588F6c19B7Fbe25 (Robinhood Chain Testnet, 46630). The official faucet did not render its request form in either tested browser. An alternate faucet did not complete eligibility checking. The wallet's testnet ETH balance remains zero. No mainnet funds are needed or requested.
